@@ -19,7 +19,7 @@
     .wrap {
         
         margin: 200px;
-        font-size: 0;
+        /* font-size: 0; */
         display:flex;
         flex-wrap:wrap;
         width:600px;
@@ -36,17 +36,41 @@
         color: white;
         cursor: move;
     }
+    .wrapItem{
+        cursor: move;
+    }
   </style>
 </head>
 <body>
   <div id="content">
    <transition-group name="flip-list" class="wrap">
-     <div v-for="item in items" :key="item" draggable="true" class="items" @dragstart="dragstart(item)" @dragenter="dragenter(item)" @dragend="dragend(item)">{{item}}</div>
+     <!-- <div v-for="item in items" :key="item" draggable="true" class="items" @dragstart="dragstart(item)" @dragenter="dragenter(item)" @dragend="dragend(item)">{{item}}</div> -->
+     <div v-for="item in items" :key="item" draggable="true" class="wrapItem" @dragover="dragover($event)" @dragstart="dragstart($event,item)" @dragenter="dragenter($event,item)" @drop="drop($event,item)">
+        <view-item >
+            <template v-slot:write="{user}">
+               <h1>{{item}}---{{user.name}}</h1>
+            </template>
+        </view-item>
+     </div>
+     
    </transition-group>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.14.1/lodash.min.js"></script>
   <script>
+    Vue.component('virtualContent',{
+        template: `<div style="height:30px;background:red"><span>12321</span></div>`
+    });
+    Vue.component('viewItem',{
+        data() {
+            return {
+                user:{
+                    name:'zs'
+                }
+            }
+        },
+        template: `<div style="height:150px;width:150px;margin:10px;"><span style="height:10px;">12321</span><div><img draggable="true" src="https://i1.hdslb.com/bfs/face/f85b03500e5e24d3cab1c6cd51d9987f63e24a9d.jpg@68w_68h.webp" /></div><slot name="write" :user="user">sadasd</slot></div>`
+    })
     var vue = new Vue({
      el: '#content',
      data: {
@@ -63,11 +87,13 @@
        this.items = _.shuffle(this.items);
       },
       // 记录初始信息
-      dragstart: function(value) {
+      dragstart: function(e,value) {
        this.oldNum = value;
+        // e.preventDefault();
       },
       // 做最终操作
-      dragend: function(value) {
+      drop: function(e,value) {
+        e.preventDefault();
        if (this.oldNum != this.newNum) {
         let oldIndex = this.items.indexOf(this.oldNum);
         let newIndex = this.items.indexOf(this.newNum);
@@ -81,8 +107,12 @@
        }
       },
       // 记录移动过程中信息
-      dragenter: function(value) {
+      dragenter: function(e,value) {
+        e.preventDefault();
        this.newNum = value;
+      },
+      dragover(e) {
+        e.preventDefault();
       }
      }
     }); 
